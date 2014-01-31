@@ -40,7 +40,7 @@
             k = Math.sqrt(top / Math.PI) * 2 / max;
 
         for (var i = 0; i < len; i++) {
-            R[i] = Math.min(Math.sqrt(size[i] / Math.PI) * 2 / k, max);
+            R[i] = k > 0 ? Math.min(Math.sqrt(size[i] / Math.PI) * 2 / k, max) : 0;
         }
 
         gutterx = guttery = Math.max.apply(Math, R.concat(gutter));
