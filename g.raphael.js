@@ -763,7 +763,7 @@ Raphael.g = {
         return { from: f, to: t, power: i };
     },
 
-    axis: function (x, y, length, from, to, steps, orientation, labels, type, dashsize, paper) {
+    axis: function (x, y, length, from, to, steps, orientation, rotation, labels, type, dashsize, paper) {
         dashsize = dashsize == null ? 2 : dashsize;
         type = type || "t";
         steps = steps || 10;
@@ -775,7 +775,7 @@ Raphael.g = {
             t = ends.to,
             i = ends.power,
             j = 0,
-            txtattr = { font: "11px 'Fontin Sans', Fontin-Sans, sans-serif" },
+            txtattr = { /*font: "11px 'Fontin Sans', Fontin-Sans, sans-serif"*/ },
             text = paper.set(),
             d;
 
@@ -791,14 +791,24 @@ Raphael.g = {
 
             while (Y >= y - length) {
                 type != "-" && type != " " && (path = path.concat(["M", x - (type == "+" || type == "|" ? dashsize : !(orientation - 1) * dashsize * 2), Y + .5, "l", dashsize * 2 + 1, 0]));
-                text.push(paper.text(x + addon, Y, (labels && labels[j++]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr).attr({ "text-anchor": orientation - 1 ? "start" : "end" }));
+                text.push(txt = paper.text(x + addon, Y, (labels && labels[j++]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr).attr({ "text-anchor": orientation - 1 ? "start" : "end" }));
+                txt.node.setAttribute("class", "g-axis-text g-axis-text-y");
+                if(rotation > 0) {
+                    txt.rotate(rotation);
+                    txt.attr('text-anchor', 'end');
+                }
                 label += d;
                 Y -= dx;
             }
 
             if (Math.round(Y + dx - (y - length))) {
                 type != "-" && type != " " && (path = path.concat(["M", x - (type == "+" || type == "|" ? dashsize : !(orientation - 1) * dashsize * 2), y - length + .5, "l", dashsize * 2 + 1, 0]));
-                text.push(paper.text(x + addon, y - length, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr).attr({ "text-anchor": orientation - 1 ? "start" : "end" }));
+                text.push(txt = paper.text(x + addon, y - length, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr).attr({ "text-anchor": orientation - 1 ? "start" : "end" }));
+                txt.node.setAttribute("class", "g-axis-text g-axis-text-y");
+                if(rotation > 0) {
+                    txt.rotate(rotation);
+                    txt.attr('text-anchor', 'end');
+                }
             }
         } else {
             label = f;
@@ -813,13 +823,10 @@ Raphael.g = {
             while (X <= x + length) {
                 type != "-" && type != " " && (path = path.concat(["M", X + .5, y - (type == "+" ? dashsize : !!orientation * dashsize * 2), "l", 0, dashsize * 2 + 1]));
                 text.push(txt = paper.text(X, y + addon, (labels && labels[j++]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr));
-
-                var bb = txt.getBBox();
-
-                if (prev >= bb.x - 5) {
-                    text.pop(text.length - 1).remove();
-                } else {
-                    prev = bb.x + bb.width;
+                txt.node.setAttribute("class", "g-axis-text g-axis-text-x");
+                if(rotation > 0) {
+                    txt.rotate(rotation);
+                    txt.attr('text-anchor', 'start');
                 }
 
                 label += d;
@@ -828,7 +835,12 @@ Raphael.g = {
 
             if (Math.round(X - dx - x - length)) {
                 type != "-" && type != " " && (path = path.concat(["M", x + length + .5, y - (type == "+" ? dashsize : !!orientation * dashsize * 2), "l", 0, dashsize * 2 + 1]));
-                text.push(paper.text(x + length, y + addon, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr));
+                text.push(txt = paper.text(x + length, y + addon, (labels && labels[j]) || (Math.round(label) == label ? label : +label.toFixed(rnd))).attr(txtattr));
+                txt.node.setAttribute("class", "g-axis-text g-axis-text-x");
+                if(rotation > 0) {
+                    txt.rotate(rotation);
+                    txt.attr('text-anchor', 'start');
+                }
             }
         }
 

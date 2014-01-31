@@ -13,10 +13,10 @@
     function Dotchart(paper, x, y, width, height, valuesx, valuesy, size, opts) {
         
         function drawAxis(ax) {
-            +ax[0] && (ax[0] = chartinst.axis(x + gutter, y + gutter, width - 2 * gutter, minx, maxx, opts.axisxstep || Math.floor((width - 2 * gutter) / 20), 2, opts.axisxlabels || null, opts.axisxtype || "t", null, paper));
-            +ax[1] && (ax[1] = chartinst.axis(x + width - gutter, y + height - gutter, height - 2 * gutter, miny, maxy, opts.axisystep || Math.floor((height - 2 * gutter) / 20), 3, opts.axisylabels || null, opts.axisytype || "t", null, paper));
-            +ax[2] && (ax[2] = chartinst.axis(x + gutter, y + height - gutter + maxR, width - 2 * gutter, minx, maxx, opts.axisxstep || Math.floor((width - 2 * gutter) / 20), 0, opts.axisxlabels || null, opts.axisxtype || "t", null, paper));
-            +ax[3] && (ax[3] = chartinst.axis(x + gutter - maxR, y + height - gutter, height - 2 * gutter, miny, maxy, opts.axisystep || Math.floor((height - 2 * gutter) / 20), 1, opts.axisylabels || null, opts.axisytype || "t", null, paper));
+            +ax[0] && (ax[0] = chartinst.axis(x + gutterx, y + guttery, width - 2 * gutterx, minx, maxx, opts.axisxstep || Math.floor((width - 2 * gutterx) / 20), 2, opts.axisxlabelsrotation || 0, opts.axisxlabels || null, opts.axisxtype || "t", null, paper));
+            +ax[1] && (ax[1] = chartinst.axis(x + width - gutterx, y + height - guttery, height - 2 * guttery, miny, maxy, opts.axisystep || Math.floor((height - 2 * guttery) / 20), 3, opts.axisylabelsrotation || 0, opts.axisylabels || null, opts.axisytype || "t", null, paper));
+            +ax[2] && (ax[2] = chartinst.axis(x + gutterx, y + height - guttery + maxR, width - 2 * gutterx, minx, maxx, opts.axisxstep || Math.floor((width - 2 * gutterx) / 20), 0, opts.axisxlabelsrotation || 0, opts.axisxlabels || null, opts.axisxtype || "t", null, paper));
+            +ax[3] && (ax[3] = chartinst.axis(x + gutterx - maxR, y + height - guttery, height - 2 * guttery, miny, maxy, opts.axisystep || Math.floor((height - 2 * guttery) / 20), 1, opts.axisylabelsrotation || 0, opts.axisylabels || null, opts.axisytype || "t", null, paper));
         }
         
         //providing defaults
@@ -43,7 +43,7 @@
             R[i] = Math.min(Math.sqrt(size[i] / Math.PI) * 2 / k, max);
         }
 
-        gutter = Math.max.apply(Math, R.concat(gutter));
+        gutterx = guttery = Math.max.apply(Math, R.concat(gutter));
 
  /*\
  * dotchart.axis
@@ -60,16 +60,22 @@
 
             drawAxis.call(chartinst, ax);
 
-            var g = [], b = [];
+            var gx = [], gy = [], b = [];
 
-            for (var i = 0, ii = ax.length; i < ii; i++) {
-                var bb = ax[i].all ? ax[i].all.getBBox()[["height", "width"][i % 2]] : 0;
-
-                g[i] = bb + gutter;
-                b[i] = bb;
+            for (var i = 0, ii = ax.length; i < ii; i++) if (ax[i].all) {
+                if(i % 2 == 0) 
+                    gy.push(ax[i].all.getBBox().height + guttery);
+                else 
+                    gx.push(ax[i].all.getBBox().width + gutterx);
             }
 
-            gutter = Math.max.apply(Math, g.concat(gutter));
+            gutterx = Math.max.apply(Math, gx.concat(gutterx));
+            gutterx = Math.min((width - (maxx - minx) * max * 2) / 2, gutterx);
+            gutterx = Math.max((width - (maxx - minx) * max * 2.5) / 2, gutterx);
+
+            guttery = Math.max.apply(Math, gy.concat(guttery));
+            guttery = Math.min((height - (maxy - miny) * max * 2) / 2, guttery);
+            guttery = Math.max((height - (maxy - miny) * max * 2.5) / 2, guttery);
 
             for (var i = 0, ii = ax.length; i < ii; i++) if (ax[i].all) {
                 ax[i].remove();
@@ -85,22 +91,25 @@
             res.axis = axis;
         }
 
-        var kx = (width - gutter * 2) / ((maxx - minx) || 1),
-            ky = (height - gutter * 2) / ((maxy - miny) || 1);
+        var kx = (width - gutterx * 2) / ((maxx - minx) || 1),
+            ky = (height - guttery * 2) / ((maxy - miny) || 1);
 
         for (var i = 0, ii = valuesy.length; i < ii; i++) {
             var sym = paper.raphael.is(symbol, "array") ? symbol[i] : symbol,
-                X = x + gutter + (valuesx[i] - minx) * kx,
-                Y = y + height - gutter - (valuesy[i] - miny) * ky;
+                X = x + gutterx + (valuesx[i] - minx) * kx,
+                Y = y + height - guttery - (valuesy[i] - miny) * ky;
 
-            sym && R[i] && series.push(paper[sym](X, Y, R[i]).attr({ fill: opts.heat ? colorValue(R[i], maxR) : chartinst.colors[0], "fill-opacity": opts.opacity ? R[i] / max : 1, stroke: "none" }));
+            if(sym && R[i]) {
+                series.push(paper[sym](X, Y, R[i]).attr({ fill: opts.heat ? colorValue(R[i], maxR) : chartinst.colors[0], "fill-opacity": opts.opacity ? R[i] / max : 1, stroke: "none" }));
+                series[series.length - 1].node.setAttribute("class", "g-dot-dot");
+            }
         }
 
         var covers = paper.set();
 
         for (var i = 0, ii = valuesy.length; i < ii; i++) {
-            var X = x + gutter + (valuesx[i] - minx) * kx,
-                Y = y + height - gutter - (valuesy[i] - miny) * ky;
+            var X = x + gutterx + (valuesx[i] - minx) * kx,
+                Y = y + height - guttery - (valuesy[i] - miny) * ky;
 
             covers.push(paper.circle(X, Y, maxR).attr(chartinst.shim));
             opts.href && opts.href[i] && covers[i].attr({href: opts.href[i]});
@@ -111,6 +120,7 @@
             covers[i].Y = valuesy[i];
             covers[i].value = size[i] || 0;
             covers[i].dot = series[i];
+            covers[i].node.setAttribute("class", "g-dot-cover")
         }
 
  /*\
